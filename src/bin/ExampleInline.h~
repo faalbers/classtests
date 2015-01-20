@@ -1,0 +1,18 @@
+#ifndef __EXAMPLEINLINE_H__
+#define __EXAMPLEINLINE_H__
+
+#include "Log.h"
+
+class ExampleInline
+{
+    int test_;
+
+public:
+    // In header inline example, avoids jumping in and out of functions
+    void setTest(int test) { test_ = test; }
+    int getTest() const { return test_; }
+    void doNothing() { std::cout << "Doing nothing to members" << std::endl;}
+};
+
+#endif
+

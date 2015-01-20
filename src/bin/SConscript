@@ -1,0 +1,8 @@
+Import('baseEnv')
+
+binEnv = baseEnv.Clone()
+
+prog = binEnv.Program('classtest', Glob("*.cpp"))
+
+binEnv.Install('#inst/bin', prog)
+

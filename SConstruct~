@@ -1,0 +1,8 @@
+baseEnv = Environment()
+
+baseEnv.Append(CCFLAGS = ['-std=c++98','-O'])
+
+Export('baseEnv')
+
+SConscript('SConscript')
+

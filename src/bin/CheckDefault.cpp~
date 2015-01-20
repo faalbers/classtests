@@ -1,0 +1,12 @@
+#include "CheckDefault.h"
+#include "Log.h"
+
+CheckDefault::CheckDefault(int _testInt)
+{
+}
+
+CheckDefault::~CheckDefault()
+{
+}
+
+

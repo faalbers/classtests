@@ -1,0 +1,189 @@
+#include "Log.h"
+#include "CheckDefault.h"
+#include "CheckConst.h"
+#include "ExampleInline.h"
+#include "ExampleStruct.h"
+#include "Dummy.h"
+#include "NoCopy.h"
+#include "InheritDummy.h"
+#include "SmartCollect.h"
+
+#include <memory>
+
+void dummyTest(Dummy) {}
+void dummyTestRef(Dummy &) {}
+
+int main(int , char **)
+{
+    /*
+    - declarations and implementations
+    Name convention:
+    - class starts with capital Letter
+    - method variables and functions start with non capital Letters
+    - pointers end with *Ptr
+    - references end with *Ref
+    - privat variables and functions end with *_
+    
+    Rules:
+    - class members should be private by default unless needed otherwise.
+    - methodes should always be const where possible.
+    - methodes that return non temporary data should return const references.
+    - methodes with a few or one line should be inline so that we don't lose
+      time jumping in and out of functions.
+    
+    Constructor rules:
+    - If a constructor is created, the default constructor does not get created,
+      but the copy constructor still gets created.
+    - Good eticket to write a destructor if creating a one or more constructors
+    - Copy constructors are called whenever an object is passed to function and 
+      destructor is called at end of function.
+    
+    Inheritance rules:
+    - default constructor will call base constructor by default (meaning,
+      (without defining it)
+    - All defined constructors will pass to base default constructor automativally
+      if not told to do otherwise with : baseconstructor()
+    - base constructors with params are not run automatically if inheriting class
+      does not define that constructors with same params and passes to that
+      base constructor using :
+    - if inheriting class defines constructor with params, the default constructor
+      HAS to be defined also.
+      
+    
+    About struct:
+    - structs are exactly the same as classes , except all members are always public
+    */
+    
+    if (LOG_DEBUG) std::cout << "\nTEST: Methods and Member variables are private by default" << std::endl;
+    // This will not work because anothe Constructor(int) was created
+    //CheckDefault ck;
+
+    // This will work, but 10 is not used in construction
+    if (LOG_DEBUG) std::cout << "Creating CheckDefault ck(10) in stack" << std::endl;
+    CheckDefault ck(10);
+
+    // This will not work
+    //ck.testPriv_ = 5;
+
+    // This will work
+    ck.testPub = 5;
+    
+    // Testing const class methods
+    if (LOG_DEBUG) std::cout << "\nTesting const class methods" << std::endl;
+    CheckConst cc;
+
+    // Inline methods example
+    if (LOG_DEBUG) std::cout << "\nInline methods example" << std::endl;
+    ExampleInline ei;
+    ei.setTest(20);
+    if (LOG_DEBUG) std::cout << "Test = " << ei.getTest() << std::endl;
+
+    // Struct example
+    if (LOG_DEBUG) std::cout << "\nStruct example" << std::endl;
+    // exactly the same as ExampleInline but as struct
+    ExampleStruct ec;
+    ec.setTest(20);
+    if (LOG_DEBUG) std::cout << "Test = " << ec.getTest() << std::endl;
+
+    // Pointers to objects demistified
+    if (LOG_DEBUG) std::cout << "\nPointers to objects demistified" << std::endl;
+    // pointer can't be changed, but object can
+    ExampleInline * const eiAPtr = new ExampleInline;
+    eiAPtr->setTest(20);
+    if (LOG_DEBUG) std::cout << "Test = " << eiAPtr->getTest() << std::endl;
+    delete eiAPtr;
+    // can't set to zero since it is a pointer that can not be changed
+    //eiAPtr = 0;
+
+    // pointer can be changed, but not object
+    const ExampleInline *eiBPtr = new ExampleInline;
+    // can't run following since it changes a member
+    //eiBPtr->setTest(20);
+    // even though doNothing does not change any members, it does not use const in definition
+    //eiBPtr->doNothing();
+    // but getTest is fine
+    if (LOG_DEBUG) std::cout << "Test = " << eiBPtr->getTest() << std::endl;
+    delete eiBPtr;
+    // can set to zero since it is a pointer that can be changed
+    eiBPtr = 0;
+  
+    // show copy constructor and destructor at work when object passed to function
+    if (LOG_DEBUG) std::cout << "\nShow copy constructor and destructor at work when object passed to function" << std::endl;
+    Dummy da;
+    if (LOG_DEBUG) std::cout << "Dummy Passed" << std::endl;
+    dummyTest(da);
+    if (LOG_DEBUG) std::cout << "Dummy Passed as reference" << std::endl;
+    dummyTestRef(da);
+    
+    // Checking default copy constructor of other constructor exists
+    NoCopy nc1(1), nc2(2);
+    if (LOG_DEBUG) std::cout << nc1.test << " " << nc2.test << std::endl;
+    nc1 = nc2;
+    if (LOG_DEBUG) std::cout << nc1.test << " " << nc2.test << std::endl;
+    nc2.test = 3;
+    if (LOG_DEBUG) std::cout << nc1.test << " " << nc2.test << std::endl;
+   
+    // Checking class inheritance
+    if (LOG_DEBUG) std::cout << "\nChecking class inheritance" << std::endl;
+    InheritDummy ida;
+    // will not work since constructor with int is not defined in InheritDummy
+    // while Dummy does have it.
+    //InheritDummy idb(10);
+    // this does work because defined in InheritDummy
+    InheritDummy idc("a");
+    
+    // Trying out smart pointers
+    if (LOG_DEBUG) std::cout << "\nTrying out smart pointers" << std::endl;
+    std::unique_ptr<Dummy> daUPtr(new Dummy);
+    std::shared_ptr<Dummy> daSPtr(new Dummy);
+    std::shared_ptr<Dummy> dbSPtr(new Dummy);
+    std::shared_ptr<Dummy> dcSPtr(new Dummy);
+    std::shared_ptr<Dummy> ddSPtr;
+    SmartCollect *sc = new SmartCollect;
+    sc->uniqueDummies.push_back(std::move(daUPtr));
+    sc->sharedDummies.push_back(daSPtr);
+    sc->sharedDummies.push_back(dbSPtr);
+    sc->sharedDummySPtr = dcSPtr;
+    if (LOG_DEBUG) std::cout << "Delete daSPtr and dcSPtr" << std::endl;
+    daSPtr.reset(); dcSPtr.reset();
+    if (LOG_DEBUG) std::cout << "Delete sc" << std::endl;
+    delete sc;
+
+    // Trying out const smart pointers
+    if (LOG_DEBUG) std::cout << "\nTrying out smart pointers" << std::endl;
+    std::shared_ptr<Dummy> deSPtr(new Dummy);
+    std::shared_ptr<const Dummy> deConstSPtr(new Dummy);
+    
+    deSPtr->setTest();
+    // The following errors because it's a const Dummy
+    //deConstSPtr->setTest();
+    
+    // But we can still reset it
+    deConstSPtr.reset();
+    
+    const std::shared_ptr<Dummy> dfSPtr(new Dummy);
+    
+    // We are not allowed to reset it because it's const
+    //dfSPtr.reset();
+    
+    // This one can be only set once ?
+    const std::shared_ptr<Dummy> dgSPtr(nullptr);
+    // You can not set a const shared_ptr anymore, only at assignement you can.
+    //dgSPtr = std::make_shared<Dummy>();
+
+    // Trying out smart pointers counting
+    if (LOG_DEBUG) std::cout << "\nTrying out smart pointers counting" << std::endl;
+    std::shared_ptr<Dummy> dhSPtr(new Dummy);
+    std::shared_ptr<Dummy> diSPtr(new Dummy);
+    if (LOG_DEBUG) std::cout << "dhSPtr count = " << dhSPtr.use_count() << std::endl;
+    if (LOG_DEBUG) std::cout << "diSPtr count = " << diSPtr.use_count() << std::endl;
+    // Here, diSPtr gets first destroyed before taking in the new pointer.
+    diSPtr = dhSPtr;
+    if (LOG_DEBUG) std::cout << "dhSPtr count = " << dhSPtr.use_count() << std::endl;
+    if (LOG_DEBUG) std::cout << "diSPtr count = " << diSPtr.use_count() << std::endl;
+
+std::cout << "\n\nSCOPE CLOSURE: ... \n" << std::endl;
+    return 0;
+}
+
+

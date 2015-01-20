@@ -1,0 +1,14 @@
+#ifndef __EXAMPLESTRUCT_H__
+#define __EXAMPLESTRUCT_H__
+
+struct ExampleStruct
+{
+    int test_;
+
+    // In header inline example, avoids jumping in and out of functions
+    void setTest(int test) { test_ = test; }
+    int getTest() const { return test_; }
+};
+
+#endif
+

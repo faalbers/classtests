@@ -1,0 +1,2 @@
+#include "SmartCollect.h"
+

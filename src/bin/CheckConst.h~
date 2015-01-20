@@ -1,0 +1,13 @@
+#ifndef __CHECKCONST_H__
+#define __CHECKCONST_H__
+
+class CheckConst
+{
+    int test_;
+
+public:
+    void setTest(int test) const;
+};
+
+#endif
+
